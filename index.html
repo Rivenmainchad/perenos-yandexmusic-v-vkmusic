@@ -36,20 +36,24 @@
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+tg.expand();
 
-        // Ссылка на твой GitHub
-        const myUrl = "https://rivenmainchad.github.io/perenos-yandexmusic-v-vkmusic/";
-
-       function startAuth() {
-    // Используем blank.html, чтобы не было ошибки redirect_uri
+function authVK() {
+    // ВАЖНО: Мы используем blank.html, чтобы ВК не ругался на redirect_uri
     const vkUrl = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
     
-    // Открываем через специальный метод Telegram, чтобы ссылка не "терялась" во внешних браузерах
+    // Открываем во внешнем браузере, чтобы пользователь мог скопировать ссылку
     tg.openLink(vkUrl);
     
-    // Сразу показываем инструкцию пользователю
-    alert("1. В открывшемся окне нажми 'Разрешить'.\n2. Тебя перекинет на белую страницу.\n3. Скопируй ВЕСЬ адрес этой страницы из строки браузера и пришли его боту в чат!");
+    alert("1. Нажми 'Разрешить'\n2. Скопируй адрес страницы из браузера (там будет написано blank.html)\n3. Пришли эту ссылку боту в чат!");
+}
+
+function sendData() {
+    const link = document.getElementById('yandex-link').value;
+    if (!link) return alert("Вставь ссылку!");
+    tg.sendData(link);
+    tg.close();
+}
 }
         }
 
