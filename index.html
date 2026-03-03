@@ -2,65 +2,59 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1a1a1a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; text-align: center; }
-        .card { background: #2b2b2b; padding: 20px; border-radius: 15px; width: 100%; max-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .btn { border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; margin: 10px 0; display: block; text-decoration: none; }
+        body { background: #1a1a1a; color: white; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: #2b2b2b; padding: 20px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .btn { border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; margin: 10px 0; font-size: 16px; transition: 0.2s; }
         .btn-vk { background: #0077ff; color: white; }
-        .btn-start { background: #ffcc00; color: black; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #333; color: white; }
-        #token-display { word-break: break-all; font-size: 10px; background: #000; padding: 10px; border-radius: 5px; display: none; margin-top: 10px; }
+        .btn-copy { background: #4caf50; color: white; display: none; }
+        .btn-send { background: #ffcc00; color: black; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #333; color: white; box-sizing: border-box; }
+        #status { color: #ffcc00; margin: 10px 0; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>Music Porter 🎵</h2>
+        <div id="status">Шаг 1: Доступ к VK</div>
         
-        <div id="auth-section">
-            <a href="https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://rivenmainchad.github.io/perenos-yandexmusic-v-vkmusic/" class="btn btn-vk">1. Авторизовать VK</a>
-        </div>
-
-        <div id="token-section" style="display:none;">
-            <p style="color: #ffcc00;">✅ Токен получен!</p>
-            <div id="token-display"></div>
-            <button class="btn btn-start" onclick="copyToken()">Скопировать и закрыть</button>
-        </div>
+        <a id="auth-btn" href="https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://rivenmainchad.github.io/perenos-yandexmusic-v-vkmusic/" class="btn btn-vk">Авторизовать через VK</a>
+        
+        <button id="copy-btn" class="btn btn-copy" onclick="copyToken()">📋 СКОПИРОВАТЬ ТОКЕН</button>
 
         <hr style="border: 0.5px solid #444; margin: 20px 0;">
         
-        <input type="text" id="yandex-link" placeholder="Ссылка на Яндекс">
-        <button class="btn btn-start" onclick="sendData()">2. Начать перенос</button>
+        <div id="status">Шаг 2: Ссылка на Яндекс</div>
+        <input type="text" id="yandex-link" placeholder="Вставь ссылку на плейлист">
+        <button class="btn btn-send" onclick="sendToBot()">Начать перенос</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Проверяем, есть ли токен в адресе страницы (после редиректа из VK)
-        const urlHash = window.location.hash;
-        if (urlHash.includes('access_token')) {
-            document.getElementById('auth-section').style.display = 'none';
-            document.getElementById('token-section').style.display = 'block';
-            const token = urlHash.split('access_token=')[1].split('&')[0];
-            document.getElementById('token-display').innerText = token;
+        // Проверка наличия токена в URL после возврата из VK
+        if (window.location.hash.includes('access_token')) {
+            const token = window.location.hash.split('access_token=')[1].split('&')[0];
+            document.getElementById('auth-btn').style.display = 'none';
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.style.display = 'block';
+            copyBtn.setAttribute('data-token', token);
+            document.getElementById('status').innerText = "✅ ТОКЕН ПОЛУЧЕН!";
         }
 
         function copyToken() {
-            const token = document.getElementById('token-display').innerText;
-            // Копируем в буфер обмена
-            navigator.clipboard.writeText(token).then(() => {
-                alert("Токен скопирован! Теперь просто вставь его в чат боту.");
-                tg.close();
-            });
+            const token = document.getElementById('copy-btn').getAttribute('data-token');
+            navigator.clipboard.writeText(token);
+            alert("Скопировано! Закрывай это окно и вставляй текст боту в чат.");
+            tg.close();
         }
 
-        function sendData() {
-            const link = document.getElementById('yandex-link').value;
-            if (!link) return alert("Вставь ссылку!");
-            tg.sendData(link);
-            tg.close();
+        function sendToBot() {
+            const val = document.getElementById('yandex-link').value;
+            if (val) { tg.sendData(val); tg.close(); }
         }
     </script>
 </body>
