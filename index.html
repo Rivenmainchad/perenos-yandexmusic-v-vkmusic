@@ -2,56 +2,78 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1e1e1e; color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: #2c2c2e; padding: 25px; border-radius: 16px; width: 85%; max-width: 320px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center; }
-        h2 { margin-top: 0; font-size: 22px; margin-bottom: 20px; }
-        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 15px; box-sizing: border-box; }
-        .btn-vk { background: #0077ff; color: #fff; text-decoration: none; }
-        .btn-send { background: #ffcc00; color: #000; }
-        input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #444; background: #1c1c1e; color: #fff; font-size: 15px; margin-bottom: 15px; box-sizing: border-box; }
-        p { font-size: 14px; color: #aaa; margin-bottom: 10px; font-weight: bold; }
-        .hint { font-size: 12px; color: #888; margin-top: -10px; margin-bottom: 15px; font-weight: normal;}
-        hr { border: none; border-top: 1px solid #444; margin: 20px 0; }
+        :root { --tg-theme-bg: #1c1c1e; --tg-theme-text: #ffffff; --tg-theme-button: #007aff; }
+        body { background: var(--tg-theme-bg); color: var(--tg-theme-text); font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 400px; text-align: center; }
+        .step { background: #2c2c2e; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        h2 { font-size: 20px; margin-bottom: 10px; color: #ffcc00; }
+        p { font-size: 14px; opacity: 0.8; margin-bottom: 15px; }
+        .btn { display: block; width: 100%; padding: 15px; border-radius: 10px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .btn-vk { background: #0077ff; color: white; }
+        .btn-copy { background: #34c759; color: white; display: none; }
+        .btn-main { background: #ffcc00; color: black; }
+        input { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>Music Porter 🎵</h2>
-        
-        <p>Шаг 1: Получи токен</p>
-        <button id="auth-btn" class="btn btn-vk" onclick="openVK()">Авторизовать VK</button>
-        <div class="hint">Откроется браузер. Скопируй ссылку из верхней строки и отправь боту!</div>
+    <div class="container">
+        <div class="step" id="step1">
+            <h2>Шаг 1: VK</h2>
+            <p>Нажми кнопку, разреши доступ, а затем нажми «СКОПИРОВАТЬ» на этой же странице.</p>
+            <button id="auth-btn" class="btn btn-vk" onclick="startAuth()">Авторизовать VK</button>
+            <button id="copy-btn" class="btn btn-copy" onclick="doCopy()">📋 СКОПИРОВАТЬ ТОКЕН</button>
+        </div>
 
-        <hr>
-        
-        <p>Шаг 2: Вставь ссылку</p>
-        <input type="text" id="yandex-link" placeholder="Ссылка на плейлист Яндекс">
-        <button class="btn btn-send" onclick="sendToBot()">Начать перенос</button>
+        <div class="step">
+            <h2>Шаг 2: Яндекс</h2>
+            <input type="text" id="y-link" placeholder="Ссылка на плейлист">
+            <button class="btn btn-main" onclick="sendToBot()">Начать перенос 🚀</button>
+        </div>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        function openVK() {
-            // Возвращаем надежный blank.html
-            const vkUrl = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
+        // Ссылка на твой GitHub
+        const myUrl = "https://rivenmainchad.github.io/perenos-yandexmusic-v-vkmusic/";
+
+        function startAuth() {
+            // Указываем ВК возвращать нас на нашу же страницу!
+            const vkUrl = `https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=${encodeURIComponent(myUrl)}`;
+            tg.openLink(vkUrl);
+        }
+
+        // Проверяем, вернулись ли мы с токеном
+        if (window.location.hash.includes('access_token')) {
+            const token = window.location.hash.split('access_token=')[1].split('&')[0];
+            document.getElementById('auth-btn').style.display = 'none';
+            const copyBtn = document.getElementById('copy-btn');
+            copyBtn.style.display = 'block';
+            copyBtn.dataset.token = token;
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function doCopy() {
+            const token = document.getElementById('copy-btn').dataset.token;
+            // Пытаемся скопировать
+            const el = document.createElement('textarea');
+            el.value = token;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
             
-            // МАГИЯ: Заставляем Telegram открыть ссылку во внешнем браузере телефона!
-            tg.openLink(vkUrl); 
+            alert("Токен в буфере! Теперь просто вставь его боту.");
+            tg.close();
         }
 
         function sendToBot() {
-            const val = document.getElementById('yandex-link').value;
-            if (val) { 
-                tg.sendData(val); 
-                tg.close(); 
-            } else {
-                alert("Сначала вставь ссылку!");
-            }
+            const link = document.getElementById('y-link').value;
+            if (link) { tg.sendData(link); tg.close(); }
         }
     </script>
 </body>
