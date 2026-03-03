@@ -29,12 +29,11 @@
         tg.expand();
 
         function authVK() {
-            // Ссылка на авторизацию (замени YOUR_VK_APP_ID на свой ID приложения VK)
-            const vkUrl = "https://id.vk.com/auth?return_auth_hash=b86d3a0b91eb55a266&redirect_uri=https%3A%2F%2Foauth.vk.com%2Fblank.html&redirect_uri_hash=de15a1510dedc1b07c&force_hash=1&app_id=6121396&response_type=token&code_challenge=&code_challenge_method=&scope=65544&state=";
-            window.open(vkUrl, '_blank');
-            alert("После авторизации скопируй URL страницы и пришли его боту в чат!");
-        }
-
+    // Используем ID официального приложения VK Admin (6121396)
+    const vkUrl = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
+    window.open(vkUrl, '_blank');
+    alert("Нажми 'Разрешить', скопируй адрес белой страницы и пришли его боту в чат!");
+}
         function sendData() {
             const link = document.getElementById('yandex-link').value;
             if (!link) return alert("Вставь ссылку!");
