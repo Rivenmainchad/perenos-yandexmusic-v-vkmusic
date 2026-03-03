@@ -2,168 +2,51 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Music Porter Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Porter</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #1c1c1e;
-            --card-bg: #2c2c2e;
-            --text-color: #ffffff;
-            --accent-color: #007aff;
-            --button-green: #34c759;
-            --button-yellow: #ffcc00;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container { width: 100%; max-width: 400px; }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        h2 { font-size: 18px; margin-top: 0; color: var(--button-yellow); }
-        p { font-size: 13px; opacity: 0.8; line-height: 1.4; }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.1s;
-            text-decoration: none;
-            margin-top: 10px;
-        }
-
-        .btn:active { transform: scale(0.98); }
-
-        .btn-vk { background-color: var(--accent-color); color: white; }
-        .btn-copy { background-color: var(--button-green); color: white; display: none; }
-        .btn-main { background-color: var(--button-yellow); color: black; margin-top: 15px; }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            background: #1c1c1e;
-            color: white;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .info-box {
-            font-size: 11px;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            word-break: break-all;
-        }
+        body { background: #1c1c1e; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .card { background: #2c2c2e; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-vk { background: #007aff; color: white; }
+        .btn-ya { background: #ffcc00; color: black; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <h3>Шаг 1: Авторизация</h3>
+        <button class="btn btn-vk" onclick="auth('vk')">Войти в VK</button>
+        <button class="btn btn-ya" onclick="auth('ya')">Войти в Яндекс</button>
+        <p style="font-size: 11px; opacity: 0.6;">После входа скопируй адрес страницы и пришли в чат боту</p>
+    </div>
 
-    <div class="container">
-        <div class="card" id="step1">
-            <h2>Шаг 1: Авторизация VK</h2>
-            <p>Нажми кнопку, разреши доступ. Если появится белая страница — скопируй её адрес и пришли боту.</p>
-            
-            <button id="auth-btn" class="btn btn-vk" onclick="startAuth()">Войти через VK</button>
-            
-            <button id="copy-btn" class="btn btn-copy" onclick="copyToken()">📋 СКОПИРОВАТЬ ТОКЕН</button>
-            <div id="token-preview" class="info-box" style="display:none;"></div>
-        </div>
-
-        <div class="card" id="step2">
-            <h2>Шаг 2: Ссылка на Яндекс</h2>
-            <input type="text" id="y-link" placeholder="https://music.yandex.ru/users/...">
-            <button class="btn btn-main" onclick="sendToBot()">Начать перенос 🚀</button>
-        </div>
+    <div class="card">
+        <h3>Шаг 2: Ссылка на плейлист</h3>
+        <input type="text" id="playlist_url" placeholder="Ссылка на плейлист Яндекса">
+        <button class="btn btn-ya" style="background: #34c759; color: white;" onclick="sendPlaylist()">Начать перенос</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем на весь экран
+        tg.expand();
 
-        // 1. Функция запуска авторизации
-        function startAuth() {
-            const clientId = "6121396";
-            // Используем blank.html - он разрешен в ВК всегда
-            const redirectUri = "https://oauth.vk.com/blank.html";
-            const scope = "audio,offline";
-            const authUrl = `https://oauth.vk.com/authorize?client_id=${clientId}&display=mobile&scope=${scope}&response_type=token&redirect_uri=${redirectUri}&v=5.131`;
-            
-            tg.openLink(authUrl);
-        }
-
-        // 2. Проверка: не вернулся ли пользователь уже с токеном?
-        // (Работает, если ты открываешь Mini App, а в URL есть данные)
-        function checkUrlForToken() {
-            const hash = window.location.hash;
-            if (hash.includes('access_token=')) {
-                const token = hash.split('access_token=')[1].split('&')[0];
-                
-                // Показываем кнопку копирования
-                document.getElementById('auth-btn').style.display = 'none';
-                const copyBtn = document.getElementById('copy-btn');
-                copyBtn.style.display = 'block';
-                copyBtn.setAttribute('data-token', token);
-                
-                const preview = document.getElementById('token-preview');
-                preview.style.display = 'block';
-                preview.innerText = "Токен обнаружен! Нажми кнопку выше.";
-                
-                tg.HapticFeedback.notificationOccurred('success');
+        function auth(platform) {
+            let url = "";
+            if (platform === 'vk') {
+                url = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
+            } else {
+                // Официальная ссылка Яндекса для получения токена через мобильное приложение
+                url = "https://oauth.yandex.ru/authorize?response_type=token&client_id=23c2693d0ef24ad9a4aa2054551df8ee";
             }
+            tg.openLink(url);
         }
 
-        // 3. Функция копирования
-        function copyToken() {
-            const token = document.getElementById('copy-btn').getAttribute('data-token');
-            const el = document.createElement('textarea');
-            el.value = token;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            
-            alert("Токен скопирован! Теперь просто вставь его в чат боту.");
-            tg.close();
+        function sendPlaylist() {
+            const url = document.getElementById('playlist_url').value;
+            if (url) { tg.sendData(url); tg.close(); }
         }
-
-        // 4. Отправка ссылки на Яндекс боту
-        function sendToBot() {
-            const link = document.getElementById('y-link').value;
-            if (!link || !link.includes('music.yandex')) {
-                alert("Пожалуйста, вставь корректную ссылку на плейлист Яндекса");
-                return;
-            }
-            tg.sendData(link); // Отправляем данные боту
-            tg.close();
-        }
-
-        // Запускаем проверку при загрузке
-        checkUrlForToken();
     </script>
 </body>
 </html>
