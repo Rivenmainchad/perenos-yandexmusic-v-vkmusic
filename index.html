@@ -6,29 +6,32 @@
     <title>Music Porter</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1c1c1e; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: #2c2c2e; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.98); }
+        body { background: #1c1c1e; color: white; font-family: -apple-system, sans-serif; text-align: center; padding: 20px; }
+        .card { background: #2c2c2e; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .btn { display: block; width: 100%; padding: 16px; margin: 12px 0; border-radius: 12px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
         .btn-vk { background: #007aff; color: white; }
         .btn-ya { background: #ffcc00; color: black; }
         .btn-start { background: #34c759; color: white; margin-top: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; }
-        p { font-size: 12px; opacity: 0.7; line-height: 1.4; }
+        input { width: 100%; padding: 14px; margin: 12px 0; border-radius: 10px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; font-size: 15px; }
+        h3 { margin-top: 0; color: #fff; }
+        p { font-size: 13px; color: #999; line-height: 1.4; }
+        .step-num { display: inline-block; width: 24px; height: 24px; background: #444; border-radius: 50%; margin-right: 8px; font-size: 14px; line-height: 24px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>🔐 Шаг 1: Авторизация</h3>
-        <p>Нажми кнопки, нажми «Разрешить» и скопируй адрес итоговой страницы обратно в чат боту.</p>
-        <button class="btn btn-vk" onclick="auth('vk')">Войти в VK</button>
-        <button class="btn btn-ya" onclick="auth('ya')">Войти в Яндекс</button>
+        <h3><span class="step-num">1</span>Вход в аккаунты</h3>
+        <p>Нажми кнопку, разреши доступ, а затем <b>скопируй адрес страницы</b> и отправь его боту в чат.</p>
+        <button class="btn btn-vk" onclick="auth('vk')">Войти через VK</button>
+        <button class="btn btn-ya" onclick="auth('ya')">Войти через Яндекс</button>
     </div>
 
     <div class="card">
-        <h3>🎵 Шаг 2: Ссылка</h3>
-        <input type="text" id="playlist_url" placeholder="https://music.yandex.ru/...">
-        <button class="btn btn-start" onclick="sendPlaylist()">Начать перенос 🚀</button>
+        <h3><span class="step-num">2</span>Перенос музыки</h3>
+        <p>Вставь ссылку на свой плейлист Яндекса ниже:</p>
+        <input type="text" id="playlist_url" placeholder="https://music.yandex.ru/users/...">
+        <button class="btn btn-start" onclick="sendPlaylist()">Запустить перенос 🚀</button>
     </div>
 
     <script>
@@ -38,22 +41,21 @@
         function auth(platform) {
             let url = "";
             if (platform === 'vk') {
-                // Используем проверенный ID для ВК
                 url = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
             } else {
-                // Используем универсальный метод авторизации Яндекса через Music Token сервис
-                url = "https://oauth.yandex.ru/authorize?response_type=token&client_id=23c2693d0ef24ad9a4aa2054551df8ee";
+                // НОВЫЙ РАБОЧИЙ CLIENT_ID (от Яндекс.Паспорта/Музыки)
+                url = "https://oauth.yandex.ru/authorize?response_type=token&client_id=fe365452e227463689f7832679813083";
             }
             tg.openLink(url);
         }
 
         function sendPlaylist() {
             const url = document.getElementById('playlist_url').value;
-            if (url) {
+            if (url && url.includes('music.yandex')) {
                 tg.sendData(url);
                 tg.close();
             } else {
-                alert("Вставь ссылку на плейлист!");
+                alert("Пожалуйста, вставь правильную ссылку на плейлист!");
             }
         }
     </script>
