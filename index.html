@@ -6,46 +6,48 @@
     <title>Music Porter</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #1c1c1e; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: #2c2c2e; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        body { background: #1c1c1e; color: white; font-family: -apple-system, sans-serif; text-align: center; padding: 20px; }
+        .card { background: #2c2c2e; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+        .btn { display: block; width: 100%; padding: 16px; margin: 12px 0; border-radius: 12px; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.96); opacity: 0.8; }
         .btn-vk { background: #007aff; color: white; }
-        .btn-ya { background: #ffcc00; color: black; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; }
+        .btn-start { background: #34c759; color: white; margin-top: 20px; }
+        input { width: 100%; padding: 14px; margin: 12px 0; border-radius: 10px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; font-size: 15px; }
+        h3 { margin-top: 0; color: #fff; }
+        p { font-size: 13px; color: #999; line-height: 1.4; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>🔑 Авторизация</h3>
-        <button class="btn btn-vk" onclick="auth('vk')">Войти в VK</button>
-        <button class="btn btn-ya" onclick="auth('ya')">Войти в Яндекс</button>
-        <p style="font-size: 12px; opacity: 0.6;">Разреши доступ и пришли ссылку из адресной строки боту</p>
+        <h3>1️⃣ Шаг: Доступ к ВК</h3>
+        <p>Нажми кнопку, нажми «Разрешить» и скопируй адрес итоговой страницы обратно в чат боту.</p>
+        <button class="btn btn-vk" onclick="authVK()">Авторизовать ВК</button>
     </div>
 
     <div class="card">
-        <h3>🎵 Ссылка на плейлист</h3>
-        <input type="text" id="playlist_url" placeholder="https://music.yandex.ru/...">
-        <button class="btn" style="background: #34c759; color: white;" onclick="sendPlaylist()">Начать перенос</button>
+        <h3>2️⃣ Шаг: Ссылка на музыку</h3>
+        <p>Вставь ссылку на <b>открытый</b> плейлист Яндекса:</p>
+        <input type="text" id="playlist_url" placeholder="https://music.yandex.ru/users/...">
+        <button class="btn btn-start" onclick="sendPlaylist()">Начать перенос 🚀</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        function auth(platform) {
-            let url = "";
-            if (platform === 'vk') {
-                url = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
-            } else {
-                // НОВЫЙ ID (от официального Desktop-приложения Яндекса)
-                url = "https://oauth.yandex.ru/authorize?response_type=token&client_id=246a3237937344939768c8716b9b1836";
-            }
+        function authVK() {
+            const url = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
             tg.openLink(url);
         }
 
         function sendPlaylist() {
             const url = document.getElementById('playlist_url').value;
-            if (url) { tg.sendData(url); tg.close(); }
+            if (url && url.includes('music.yandex')) {
+                tg.sendData(url);
+                tg.close();
+            } else {
+                alert("Пожалуйста, вставь правильную ссылку на плейлист!");
+            }
         }
     </script>
 </body>
