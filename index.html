@@ -7,25 +7,28 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { background: #1c1c1e; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: #2c2c2e; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .card { background: #2c2c2e; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         .btn-vk { background: #007aff; color: white; }
         .btn-ya { background: #ffcc00; color: black; }
+        .btn-start { background: #34c759; color: white; margin-top: 20px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1c1c1e; color: white; box-sizing: border-box; }
+        p { font-size: 12px; opacity: 0.7; line-height: 1.4; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h3>Шаг 1: Авторизация</h3>
+        <h3>🔐 Шаг 1: Авторизация</h3>
+        <p>Нажми кнопки, нажми «Разрешить» и скопируй адрес итоговой страницы обратно в чат боту.</p>
         <button class="btn btn-vk" onclick="auth('vk')">Войти в VK</button>
         <button class="btn btn-ya" onclick="auth('ya')">Войти в Яндекс</button>
-        <p style="font-size: 11px; opacity: 0.6;">После входа скопируй адрес страницы и пришли в чат боту</p>
     </div>
 
     <div class="card">
-        <h3>Шаг 2: Ссылка на плейлист</h3>
-        <input type="text" id="playlist_url" placeholder="Ссылка на плейлист Яндекса">
-        <button class="btn btn-ya" style="background: #34c759; color: white;" onclick="sendPlaylist()">Начать перенос</button>
+        <h3>🎵 Шаг 2: Ссылка</h3>
+        <input type="text" id="playlist_url" placeholder="https://music.yandex.ru/...">
+        <button class="btn btn-start" onclick="sendPlaylist()">Начать перенос 🚀</button>
     </div>
 
     <script>
@@ -35,9 +38,10 @@
         function auth(platform) {
             let url = "";
             if (platform === 'vk') {
+                // Используем проверенный ID для ВК
                 url = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
             } else {
-                // Официальная ссылка Яндекса для получения токена через мобильное приложение
+                // Используем универсальный метод авторизации Яндекса через Music Token сервис
                 url = "https://oauth.yandex.ru/authorize?response_type=token&client_id=23c2693d0ef24ad9a4aa2054551df8ee";
             }
             tg.openLink(url);
@@ -45,7 +49,12 @@
 
         function sendPlaylist() {
             const url = document.getElementById('playlist_url').value;
-            if (url) { tg.sendData(url); tg.close(); }
+            if (url) {
+                tg.sendData(url);
+                tg.close();
+            } else {
+                alert("Вставь ссылку на плейлист!");
+            }
         }
     </script>
 </body>
