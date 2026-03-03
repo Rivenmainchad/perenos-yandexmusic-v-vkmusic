@@ -41,10 +41,16 @@
         // Ссылка на твой GitHub
         const myUrl = "https://rivenmainchad.github.io/perenos-yandexmusic-v-vkmusic/";
 
-        function startAuth() {
-            // Указываем ВК возвращать нас на нашу же страницу!
-            const vkUrl = `https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=${encodeURIComponent(myUrl)}`;
-            tg.openLink(vkUrl);
+       function startAuth() {
+    // Используем blank.html, чтобы не было ошибки redirect_uri
+    const vkUrl = "https://oauth.vk.com/authorize?client_id=6121396&scope=audio,offline&response_type=token&redirect_uri=https://oauth.vk.com/blank.html";
+    
+    // Открываем через специальный метод Telegram, чтобы ссылка не "терялась" во внешних браузерах
+    tg.openLink(vkUrl);
+    
+    // Сразу показываем инструкцию пользователю
+    alert("1. В открывшемся окне нажми 'Разрешить'.\n2. Тебя перекинет на белую страницу.\n3. Скопируй ВЕСЬ адрес этой страницы из строки браузера и пришли его боту в чат!");
+}
         }
 
         // Проверяем, вернулись ли мы с токеном
